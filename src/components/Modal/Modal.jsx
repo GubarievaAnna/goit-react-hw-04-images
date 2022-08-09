@@ -20,6 +20,14 @@ class Modal extends Component {
     }
   };
 
+  //   useEffect(() => {
+  //   const handleKeyDown = e => console.log("keydown event: ", e);
+  //   document.addEventListener("keydown", handleKeyDown);
+  //   return () => {
+  //     document.removeEventListener("keydown", handleKeyDown);
+  //   };
+  // }, []);
+
   render() {
     const { src, alt } = this.props;
     return createPortal(
