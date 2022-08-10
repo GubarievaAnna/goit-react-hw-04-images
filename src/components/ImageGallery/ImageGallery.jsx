@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import api from '../../utils/api';
 import Button from '../Button/Button.jsx';
@@ -6,104 +6,76 @@ import Loader from '../Loader/Loader.jsx';
 import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem.jsx';
 import s from './ImageGallery.module.css';
 
-class ImageGallery extends Component {
-  state = {
-    images: [],
-    page: 1,
-    status: '',
-    error: '',
-    showLoadMore: false,
-    loading: false,
+const ImageGallery = ({ keyWord }) => {
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [status, setStatus] = useState('');
+  const [error, setError] = useState('');
+  const [isLoadMore, setIsLoadMore] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchPhotos = currentPage => {
+    setIsLoadMore(false);
+    setIsLoading(true);
+    api(keyWord, currentPage)
+      .then(({ hits, totalHits }) => {
+        if (hits.length === 0) {
+          setStatus('rejected');
+          return;
+        }
+        setImages(prev => [...prev, ...hits]);
+        setStatus('resolved');
+        Math.ceil(totalHits / 12) === page
+          ? setIsLoadMore(false)
+          : setIsLoadMore(true);
+      })
+      .catch(error => {
+        setStatus('error');
+        setError(error);
+      })
+      .finally(() => setIsLoading(false));
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    const { keyWord } = this.props;
-    const { page } = this.state;
+  useEffect(() => {
+    if (keyWord === '') return;
+    setPage(1);
+    setImages([]);
+    fetchPhotos(1);
+  }, [keyWord]);
 
-    if (prevProps.keyWord !== keyWord) {
-      this.setState({ page: 1, status: 'pending', showLoadMore: false });
-      api(keyWord)
-        .then(({ hits, totalHits }) => {
-          if (hits.length === 0) {
-            this.setState({ status: 'rejected' });
-            return;
-          }
+  useEffect(() => {
+    if (page === 1) return;
+    fetchPhotos(page);
+  }, [page]);
 
-          this.setState({
-            images: hits,
-            status: 'resolved',
-            showLoadMore: true,
-          });
+  const changePageQuery = () => setPage(prev => prev + 1);
 
-          if (totalHits <= 12) {
-            this.setState({ showLoadMore: false });
-          }
-        })
-        .catch(error => this.setState({ status: 'error', error }));
-
-      return;
-    }
-
-    if (prevState.page !== page && page !== 1) {
-      api(keyWord, page)
-        .then(({ hits, totalHits }) => {
-          this.setState(prev => ({
-            images: [...prev.images, ...hits],
-            status: 'resolved',
-            loading: false,
-            showLoadMore: true,
-          }));
-
-          if (Math.ceil(totalHits / 12) === page) {
-            this.setState({ showLoadMore: false });
-          }
-        })
-        .catch(error =>
-          this.setState({ status: 'error', error, loading: false })
-        );
-
-      return;
-    }
-  }
-
-  changePageQuery = () => {
-    this.setState(prev => ({
-      page: prev.page + 1,
-      loading: true,
-      showLoadMore: false,
-    }));
-  };
-
-  render() {
-    const { images, status, error, showLoadMore, loading } = this.state;
-    return (
-      <>
-        {status === 'rejected' && (
-          <div className={s.rejected}>
-            Sorry, there are no images matching your search query. Please try
-            again.
-          </div>
-        )}
-        {status === 'error' && <div className={s.error}> {error.message} </div>}
-        {status === 'pending' && <Loader />}
-        {status === 'resolved' && (
-          <ul className={s.gallery}>
-            {images.map(el => (
-              <ImageGalleryItem
-                key={el.id}
-                src={el.previewURL}
-                alt={el.tags}
-                srcModal={el.largeImageURL}
-              />
-            ))}
-          </ul>
-        )}
-        {loading && <Loader />}
-        {showLoadMore && <Button onButtonClick={this.changePageQuery} />}
-      </>
-    );
-  }
-}
+  return (
+    <>
+      {status === 'rejected' && (
+        <div className={s.rejected}>
+          Sorry, there are no images matching your search query. Please try
+          again.
+        </div>
+      )}
+      {status === 'error' && <div className={s.error}> {error.message} </div>}
+      {status === 'resolved' && (
+        <ul className={s.gallery}>
+          {images.map(el => (
+            <ImageGalleryItem
+              key={el.id}
+              src={el.previewURL}
+              alt={el.tags}
+              srcModal={el.largeImageURL}
+            />
+          ))}
+        </ul>
+      )}
+      {isLoading && <Loader />}
+      {isLoadMore && <Button onButtonClick={changePageQuery} />}
+    </>
+  );
+};
 
 ImageGallery.propTypes = {
   keyWord: PropTypes.string.isRequired,
