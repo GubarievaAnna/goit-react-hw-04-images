@@ -11,7 +11,7 @@ const Searchbar = ({ onSubmitSearch }) => {
 
   const onSubmitForm = e => {
     e.preventDefault();
-    if (input === '') {
+    if (input.trim() === '') {
       toast.warn('Please, input your query for search!', {
         autoClose: 2000,
         theme: 'colored',
