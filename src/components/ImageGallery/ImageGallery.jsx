@@ -14,7 +14,7 @@ const ImageGallery = ({ keyWord }) => {
   const [isLoadMore, setIsLoadMore] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const firstStartRef = useRef(null);
+  const pageStartRef = useRef(null);
 
   const fetchPhotos = currentPage => {
     setIsLoadMore(false);
@@ -44,21 +44,21 @@ const ImageGallery = ({ keyWord }) => {
     setStatus('');
     setImages([]);
     fetchPhotos(1);
-    firstStartRef.current = document.body.clientHeight;
+    pageStartRef.current = document.body.clientHeight;
     // eslint-disable-next-line
   }, [keyWord]);
 
   useEffect(() => {
     if (page === 1) return;
     fetchPhotos(page);
-    firstStartRef.current = document.body.clientHeight;
+    pageStartRef.current = document.body.clientHeight;
     // eslint-disable-next-line
   }, [page]);
 
   useEffect(() => {
     if (page > 1) {
       window.scrollTo({
-        top: firstStartRef.current - 200,
+        top: pageStartRef.current - 200,
         behavior: 'smooth',
       });
     }
