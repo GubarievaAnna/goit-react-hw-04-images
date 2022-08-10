@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import api from '../../utils/api';
 import Button from '../Button/Button.jsx';
@@ -14,27 +14,30 @@ const ImageGallery = ({ keyWord }) => {
   const [isLoadMore, setIsLoadMore] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchPhotos = currentPage => {
-    setIsLoadMore(false);
-    setIsLoading(true);
-    api(keyWord, currentPage)
-      .then(({ hits, totalHits }) => {
-        if (hits.length === 0) {
-          setStatus('rejected');
-          return;
-        }
-        setImages(prev => [...prev, ...hits]);
-        setStatus('resolved');
-        Math.ceil(totalHits / 12) === page
-          ? setIsLoadMore(false)
-          : setIsLoadMore(true);
-      })
-      .catch(error => {
-        setStatus('error');
-        setError(error);
-      })
-      .finally(() => setIsLoading(false));
-  };
+  const fetchPhotos = useCallback(
+    currentPage => {
+      setIsLoadMore(false);
+      setIsLoading(true);
+      api(keyWord, currentPage)
+        .then(({ hits, totalHits }) => {
+          if (hits.length === 0) {
+            setStatus('rejected');
+            return;
+          }
+          setImages(prev => [...prev, ...hits]);
+          setStatus('resolved');
+          Math.ceil(totalHits / 12) === page
+            ? setIsLoadMore(false)
+            : setIsLoadMore(true);
+        })
+        .catch(error => {
+          setStatus('error');
+          setError(error);
+        })
+        .finally(() => setIsLoading(false));
+    },
+    [keyWord, page]
+  );
 
   useEffect(() => {
     if (keyWord === '') return;
@@ -42,12 +45,12 @@ const ImageGallery = ({ keyWord }) => {
     setStatus('');
     setImages([]);
     fetchPhotos(1);
-  }, [keyWord]);
+  }, [keyWord, fetchPhotos]);
 
   useEffect(() => {
     if (page === 1) return;
     fetchPhotos(page);
-  }, [page]);
+  }, [page, fetchPhotos]);
 
   const changePageQuery = () => setPage(prev => prev + 1);
 
