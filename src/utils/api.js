@@ -2,7 +2,7 @@ import axios from 'axios';
 
 axios.defaults.baseURL = 'https://pixabay.com/api/';
 
-const api = (query, page = 1) => {
+const api = (query, page) => {
   const searchParams = new URLSearchParams({
     q: query,
     page,

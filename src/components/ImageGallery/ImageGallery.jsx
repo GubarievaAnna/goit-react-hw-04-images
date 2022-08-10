@@ -39,6 +39,7 @@ const ImageGallery = ({ keyWord }) => {
   useEffect(() => {
     if (keyWord === '') return;
     setPage(1);
+    setStatus('');
     setImages([]);
     fetchPhotos(1);
   }, [keyWord]);

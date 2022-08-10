@@ -1,45 +1,32 @@
-import { Component } from 'react';
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
 import s from './Modal.module.css';
 
 const container = document.getElementById('modal');
 
-class Modal extends Component {
-  componentDidMount() {
-    window.addEventListener('keydown', this.onModalClose);
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.onModalClose);
-  }
-
-  onModalClose = e => {
-    if (e.code === 'Escape' || e.currentTarget === e.target) {
-      this.props.onModalClose();
-    }
+const Modal = ({ src, alt, onModalClose }) => {
+  const closeModal = e => {
+    if (e.currentTarget === e.target || e.code === 'Escape') onModalClose();
   };
 
-  //   useEffect(() => {
-  //   const handleKeyDown = e => console.log("keydown event: ", e);
-  //   document.addEventListener("keydown", handleKeyDown);
-  //   return () => {
-  //     document.removeEventListener("keydown", handleKeyDown);
-  //   };
-  // }, []);
+  useEffect(() => {
+    document.addEventListener('keydown', closeModal);
 
-  render() {
-    const { src, alt } = this.props;
-    return createPortal(
-      <div className={s.overlay} onClick={this.onModalClose}>
-        <div className={s.modal}>
-          <img src={src} alt={alt} />
-        </div>
-      </div>,
-      container
-    );
-  }
-}
+    return () => {
+      document.removeEventListener('keydown', closeModal);
+    };
+  }, []);
+
+  return createPortal(
+    <div className={s.overlay} onClick={closeModal}>
+      <div className={s.modal}>
+        <img src={src} alt={alt} />
+      </div>
+    </div>,
+    container
+  );
+};
 
 Modal.propTypes = {
   src: PropTypes.string.isRequired,
