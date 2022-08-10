@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import api from '../../utils/api';
 import Button from '../Button/Button.jsx';
@@ -13,6 +13,8 @@ const ImageGallery = ({ keyWord }) => {
   const [error, setError] = useState('');
   const [isLoadMore, setIsLoadMore] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const firstStartRef = useRef(null);
 
   const fetchPhotos = currentPage => {
     setIsLoadMore(false);
@@ -42,14 +44,25 @@ const ImageGallery = ({ keyWord }) => {
     setStatus('');
     setImages([]);
     fetchPhotos(1);
+    firstStartRef.current = document.body.clientHeight;
     // eslint-disable-next-line
   }, [keyWord]);
 
   useEffect(() => {
     if (page === 1) return;
     fetchPhotos(page);
+    firstStartRef.current = document.body.clientHeight;
     // eslint-disable-next-line
   }, [page]);
+
+  useEffect(() => {
+    if (page > 1) {
+      window.scrollTo({
+        top: firstStartRef.current - 200,
+        behavior: 'smooth',
+      });
+    }
+  }, [images, page]);
 
   const changePageQuery = () => setPage(prev => prev + 1);
 
