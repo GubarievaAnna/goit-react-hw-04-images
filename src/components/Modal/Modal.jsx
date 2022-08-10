@@ -6,20 +6,23 @@ import s from './Modal.module.css';
 const container = document.getElementById('modal');
 
 const Modal = ({ src, alt, onModalClose }) => {
-  const closeModal = e => {
-    if (e.currentTarget === e.target || e.code === 'Escape') onModalClose();
+  const onBackdropClick = e => {
+    if (e.currentTarget === e.target) onModalClose();
   };
 
   useEffect(() => {
-    document.addEventListener('keydown', closeModal);
+    const handleKeyDown = e => {
+      if (e.code === 'Escape') onModalClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      document.removeEventListener('keydown', closeModal);
+      document.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [onModalClose]);
 
   return createPortal(
-    <div className={s.overlay} onClick={closeModal}>
+    <div className={s.overlay} onClick={onBackdropClick}>
       <div className={s.modal}>
         <img src={src} alt={alt} />
       </div>
