@@ -19,7 +19,8 @@ const Modal = ({ src, alt, onModalClose }) => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [onModalClose]);
+    // eslint-disable-next-line
+  }, []);
 
   return createPortal(
     <div className={s.overlay} onClick={onBackdropClick}>
